@@ -23,6 +23,17 @@ export async function createMilestone(formData: FormData) {
   revalidatePath(`/goals/${goalId}`);
 }
 
+export async function updateMilestone(formData: FormData) {
+  const supabase = await createClient();
+  const milestoneId = String(formData.get("milestoneId"));
+  const goalId = String(formData.get("goalId"));
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return;
+
+  await supabase.from("milestones").update({ title }).eq("id", milestoneId);
+  revalidatePath(`/goals/${goalId}`);
+}
+
 export async function toggleMilestoneStatus(formData: FormData) {
   const supabase = await createClient();
   const milestoneId = String(formData.get("milestoneId"));

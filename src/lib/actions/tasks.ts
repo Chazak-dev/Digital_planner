@@ -54,6 +54,7 @@ export async function updateTaskDetails(formData: FormData) {
   const revalidate = String(formData.get("revalidatePath") ?? "/");
   const dueDate = (formData.get("dueDate") as string) || null;
   const scheduledDate = (formData.get("scheduledDate") as string) || null;
+  const title = String(formData.get("title") ?? "").trim();
 
   const tagsRaw = String(formData.get("tags") ?? "");
   const tags = tagsRaw
@@ -66,6 +67,10 @@ export async function updateTaskDetails(formData: FormData) {
   await supabase
     .from("tasks")
     .update({
+      // Empty titles are rejected client-side (required field) — an empty
+      // string here would only happen from a stripped/malformed request, so
+      // keep the existing title rather than blanking it out.
+      ...(title ? { title } : {}),
       description: (formData.get("description") as string) || null,
       notes: (formData.get("notes") as string) || null,
       priority: (formData.get("priority") as string) || "should",

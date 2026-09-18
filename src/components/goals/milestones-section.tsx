@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { createMilestone, toggleMilestoneStatus, deleteMilestone } from "@/lib/actions/milestones";
+import { createMilestone, toggleMilestoneStatus, deleteMilestone, updateMilestone } from "@/lib/actions/milestones";
 import { TaskCheckbox } from "@/components/task-checkbox";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SubmitButton } from "@/components/submit-button";
@@ -37,25 +37,48 @@ export function MilestonesSection({ goalId, milestones }: { goalId: string; mile
         {sorted.map((m) => (
           <div
             key={m.id}
-            className="flex items-center gap-3 rounded-lg border border-border bg-raised px-3 py-2.5"
+            className="flex items-start gap-1 rounded-lg border border-border bg-raised px-3 py-2.5"
           >
-            <form action={toggleMilestoneStatus} className="contents">
-              <input type="hidden" name="milestoneId" value={m.id} />
-              <input type="hidden" name="goalId" value={goalId} />
-              <TaskCheckbox defaultChecked={m.status === "done"} />
-            </form>
-            <span
-              className={`flex-1 text-sm ${m.status === "done" ? "text-ink-soft line-through" : "text-ink"}`}
-            >
-              {m.title}
-            </span>
+            <details className="min-w-0 flex-1 group">
+              <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+                <form action={toggleMilestoneStatus} className="contents">
+                  <input type="hidden" name="milestoneId" value={m.id} />
+                  <input type="hidden" name="goalId" value={goalId} />
+                  <TaskCheckbox defaultChecked={m.status === "done"} />
+                </form>
+                <span
+                  className={`flex-1 truncate text-sm ${m.status === "done" ? "text-ink-soft line-through" : "text-ink"}`}
+                >
+                  {m.title}
+                </span>
+              </summary>
+
+              <form action={updateMilestone} className="mt-2.5 flex items-center gap-2 border-t border-border pt-2.5">
+                <input type="hidden" name="milestoneId" value={m.id} />
+                <input type="hidden" name="goalId" value={goalId} />
+                <input
+                  type="text"
+                  name="title"
+                  defaultValue={m.title}
+                  required
+                  className="min-w-0 flex-1 rounded-lg border border-border bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-accent"
+                />
+                <SubmitButton
+                  pendingText="Saving…"
+                  className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent hover:text-accent"
+                >
+                  Rename
+                </SubmitButton>
+              </form>
+            </details>
+
             <form action={deleteMilestone}>
               <input type="hidden" name="milestoneId" value={m.id} />
               <input type="hidden" name="goalId" value={goalId} />
               <ConfirmSubmitButton
                 confirmMessage="Delete this milestone?"
                 aria-label="Delete milestone"
-                className="rounded-md p-1 text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
+                className="shrink-0 rounded-md p-1 text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
               >
                 <Trash2 size={14} />
               </ConfirmSubmitButton>

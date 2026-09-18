@@ -1,6 +1,7 @@
-import { Trash2, Link as LinkIcon, StickyNote } from "lucide-react";
-import { createNote, deleteNote } from "@/lib/actions/notes";
-import { createClassSlot, deleteClassSlot } from "@/lib/actions/class-schedule";
+import { Trash2 } from "lucide-react";
+import { createNote } from "@/lib/actions/notes";
+import { createClassSlot, deleteClassSlot, updateClassSlot } from "@/lib/actions/class-schedule";
+import { NoteRow } from "@/components/note-row";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SubmitButton } from "@/components/submit-button";
 import type { Note, ClassSlot } from "@/lib/types";
@@ -70,29 +71,74 @@ export function NotesScheduleTab({
 
         <div className="mt-3 flex max-h-64 flex-col gap-1.5 overflow-y-auto pr-1">
           {sortedSchedule.map((slot) => (
-            <div
-              key={slot.id}
-              className="flex items-center gap-3 rounded-lg border border-border bg-raised px-3 py-2"
-            >
-              <span className="w-9 text-sm font-medium text-ink">{DAYS[slot.day_of_week]}</span>
-              <span className="text-sm text-ink-soft">
-                {slot.start_time.slice(0, 5)}–{slot.end_time.slice(0, 5)}
-              </span>
-              {slot.location && (
-                <span className="flex-1 truncate text-sm text-ink-soft">{slot.location}</span>
-              )}
-              <form action={deleteClassSlot} className="ml-auto">
+            <details key={slot.id} className="rounded-lg border border-border bg-raised px-3 py-2 group">
+              <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+                <span className="w-9 text-sm font-medium text-ink">{DAYS[slot.day_of_week]}</span>
+                <span className="text-sm text-ink-soft">
+                  {slot.start_time.slice(0, 5)}–{slot.end_time.slice(0, 5)}
+                </span>
+                {slot.location && (
+                  <span className="flex-1 truncate text-sm text-ink-soft">{slot.location}</span>
+                )}
+                <form action={deleteClassSlot} className="ml-auto">
+                  <input type="hidden" name="slotId" value={slot.id} />
+                  <input type="hidden" name="courseId" value={courseId} />
+                  <ConfirmSubmitButton
+                    confirmMessage="Remove this class time?"
+                    aria-label="Delete class time"
+                    className="rounded-md p-1 text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
+                  >
+                    <Trash2 size={14} />
+                  </ConfirmSubmitButton>
+                </form>
+              </summary>
+
+              <form
+                action={updateClassSlot}
+                className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-border pt-2.5"
+              >
                 <input type="hidden" name="slotId" value={slot.id} />
                 <input type="hidden" name="courseId" value={courseId} />
-                <ConfirmSubmitButton
-                  confirmMessage="Remove this class time?"
-                  aria-label="Delete class time"
-                  className="rounded-md p-1 text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
+                <select
+                  name="dayOfWeek"
+                  defaultValue={slot.day_of_week}
+                  className="rounded-lg border border-border bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-accent"
                 >
-                  <Trash2 size={14} />
-                </ConfirmSubmitButton>
+                  {DAYS.map((d, i) => (
+                    <option key={d} value={i}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="time"
+                  name="startTime"
+                  defaultValue={slot.start_time.slice(0, 5)}
+                  required
+                  className="rounded-lg border border-border bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-accent"
+                />
+                <input
+                  type="time"
+                  name="endTime"
+                  defaultValue={slot.end_time.slice(0, 5)}
+                  required
+                  className="rounded-lg border border-border bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-accent"
+                />
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location (optional)"
+                  defaultValue={slot.location ?? ""}
+                  className="min-w-0 flex-1 rounded-lg border border-border bg-paper px-3 py-1.5 text-sm text-ink outline-none focus:border-accent"
+                />
+                <SubmitButton
+                  pendingText="Saving…"
+                  className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent hover:text-accent"
+                >
+                  Save
+                </SubmitButton>
               </form>
-            </div>
+            </details>
           ))}
         </div>
       </div>
@@ -145,41 +191,7 @@ export function NotesScheduleTab({
             <p className="py-4 text-center text-sm text-ink-soft">No notes or links yet.</p>
           )}
           {notes.map((note) => (
-            <div
-              key={note.id}
-              className="flex items-start gap-3 rounded-lg border border-border bg-raised px-3 py-2.5"
-            >
-              {note.kind === "link" ? (
-                <LinkIcon size={15} className="mt-0.5 shrink-0 text-ink-soft" />
-              ) : (
-                <StickyNote size={15} className="mt-0.5 shrink-0 text-ink-soft" />
-              )}
-              <div className="min-w-0 flex-1">
-                {note.title && <p className="text-sm font-medium text-ink">{note.title}</p>}
-                {note.content && <p className="text-sm text-ink-soft">{note.content}</p>}
-                {note.url && (
-                  <a
-                    href={note.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-accent underline underline-offset-2"
-                  >
-                    {note.url}
-                  </a>
-                )}
-              </div>
-              <form action={deleteNote}>
-                <input type="hidden" name="noteId" value={note.id} />
-                <input type="hidden" name="revalidatePath" value={revalidatePath} />
-                <ConfirmSubmitButton
-                  confirmMessage="Delete this note?"
-                  aria-label="Delete note"
-                  className="rounded-md p-1 text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
-                >
-                  <Trash2 size={14} />
-                </ConfirmSubmitButton>
-              </form>
-            </div>
+            <NoteRow key={note.id} note={note} revalidatePath={revalidatePath} />
           ))}
         </div>
       </div>

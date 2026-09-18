@@ -57,6 +57,14 @@ export function TaskRow({
               <input type="hidden" name="taskId" value={task.id} />
               <input type="hidden" name="revalidatePath" value={revalidatePath} />
 
+              <input
+                type="text"
+                name="title"
+                defaultValue={task.title}
+                required
+                placeholder="Title"
+                className="rounded-lg border border-border bg-paper px-3 py-2 text-sm font-medium text-ink outline-none focus:border-accent"
+              />
               <textarea
                 name="description"
                 placeholder="Description…"

@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { createTopic, toggleTopicStatus, deleteTopic } from "@/lib/actions/course-topics";
+import { createTopic, toggleTopicStatus, deleteTopic, updateTopic } from "@/lib/actions/course-topics";
 import { TaskCheckbox } from "@/components/task-checkbox";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SubmitButton } from "@/components/submit-button";
@@ -45,27 +45,50 @@ export function TopicsTab({ courseId, topics }: { courseId: string; topics: Cour
         {sorted.map((topic) => (
           <div
             key={topic.id}
-            className="flex items-center gap-3 rounded-lg border border-border bg-raised px-3 py-2.5"
+            className="flex items-start gap-1 rounded-lg border border-border bg-raised px-3 py-2.5"
           >
-            <form action={toggleTopicStatus} className="contents">
-              <input type="hidden" name="topicId" value={topic.id} />
-              <input type="hidden" name="courseId" value={courseId} />
-              <TaskCheckbox defaultChecked={topic.status === "done"} />
-            </form>
-            <span
-              className={`flex-1 text-sm ${
-                topic.status === "done" ? "text-ink-soft line-through" : "text-ink"
-              }`}
-            >
-              {topic.title}
-            </span>
+            <details className="min-w-0 flex-1 group">
+              <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+                <form action={toggleTopicStatus} className="contents">
+                  <input type="hidden" name="topicId" value={topic.id} />
+                  <input type="hidden" name="courseId" value={courseId} />
+                  <TaskCheckbox defaultChecked={topic.status === "done"} />
+                </form>
+                <span
+                  className={`flex-1 truncate text-sm ${
+                    topic.status === "done" ? "text-ink-soft line-through" : "text-ink"
+                  }`}
+                >
+                  {topic.title}
+                </span>
+              </summary>
+
+              <form action={updateTopic} className="mt-2.5 flex items-center gap-2 border-t border-border pt-2.5">
+                <input type="hidden" name="topicId" value={topic.id} />
+                <input type="hidden" name="courseId" value={courseId} />
+                <input
+                  type="text"
+                  name="title"
+                  defaultValue={topic.title}
+                  required
+                  className="min-w-0 flex-1 rounded-lg border border-border bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-accent"
+                />
+                <SubmitButton
+                  pendingText="Saving…"
+                  className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent hover:text-accent"
+                >
+                  Rename
+                </SubmitButton>
+              </form>
+            </details>
+
             <form action={deleteTopic}>
               <input type="hidden" name="topicId" value={topic.id} />
               <input type="hidden" name="courseId" value={courseId} />
               <ConfirmSubmitButton
                 confirmMessage="Delete this topic?"
                 aria-label="Delete topic"
-                className="rounded-md p-1 text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
+                className="shrink-0 rounded-md p-1 text-ink-soft transition-colors hover:bg-accent-soft hover:text-accent"
               >
                 <Trash2 size={14} />
               </ConfirmSubmitButton>

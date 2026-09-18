@@ -31,6 +31,20 @@ export async function createNote(formData: FormData) {
   revalidatePath(revalidate);
 }
 
+export async function updateNote(formData: FormData) {
+  const supabase = await createClient();
+  const noteId = String(formData.get("noteId"));
+  const revalidate = String(formData.get("revalidatePath") ?? "/");
+  const title = (formData.get("title") as string) || null;
+  const content = (formData.get("content") as string) || null;
+  const url = (formData.get("url") as string) || null;
+
+  if (!title && !content && !url) return;
+
+  await supabase.from("notes").update({ title, content, url }).eq("id", noteId);
+  revalidatePath(revalidate);
+}
+
 export async function deleteNote(formData: FormData) {
   const supabase = await createClient();
   const noteId = String(formData.get("noteId"));

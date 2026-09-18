@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export async function updatePreferences(formData: FormData) {
@@ -41,6 +42,7 @@ export async function completeOnboarding(formData: FormData) {
     })
     .eq("id", data.user.id);
 
+  (await cookies()).set("onboarded", "1", { path: "/", maxAge: 60 * 60 * 24 * 365 });
   redirect("/");
 }
 
@@ -54,6 +56,7 @@ export async function skipOnboarding() {
     .update({ onboarding_completed_at: new Date().toISOString() })
     .eq("id", data.user.id);
 
+  (await cookies()).set("onboarded", "1", { path: "/", maxAge: 60 * 60 * 24 * 365 });
   redirect("/");
 }
 

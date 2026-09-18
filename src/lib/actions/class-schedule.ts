@@ -21,6 +21,27 @@ export async function createClassSlot(formData: FormData) {
   revalidatePath(`/university/${courseId}`);
 }
 
+export async function updateClassSlot(formData: FormData) {
+  const supabase = await createClient();
+  const slotId = String(formData.get("slotId"));
+  const courseId = String(formData.get("courseId"));
+  const startTime = String(formData.get("startTime") ?? "");
+  const endTime = String(formData.get("endTime") ?? "");
+  if (!startTime || !endTime) return;
+
+  await supabase
+    .from("class_schedule")
+    .update({
+      day_of_week: Number(formData.get("dayOfWeek") ?? 1),
+      start_time: startTime,
+      end_time: endTime,
+      location: (formData.get("location") as string) || null,
+    })
+    .eq("id", slotId);
+
+  revalidatePath(`/university/${courseId}`);
+}
+
 export async function deleteClassSlot(formData: FormData) {
   const supabase = await createClient();
   const slotId = String(formData.get("slotId"));

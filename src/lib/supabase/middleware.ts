@@ -48,7 +48,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (data.user && pathname !== "/onboarding" && !isPublicPath(pathname)) {
+  // Once we know a user is onboarded, remember it in a cookie so every later
+  // request skips this DB round-trip — it only ever needs to fire again if
+  // someone gets a new browser/session without the cookie.
+  if (data.user && pathname !== "/onboarding" && !isPublicPath(pathname) && !request.cookies.get("onboarded")) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("onboarding_completed_at")
@@ -58,6 +61,8 @@ export async function updateSession(request: NextRequest) {
     if (profile && !profile.onboarding_completed_at) {
       return NextResponse.redirect(new URL("/onboarding", request.url));
     }
+
+    response.cookies.set("onboarded", "1", { path: "/", maxAge: 60 * 60 * 24 * 365 });
   }
 
   return response;

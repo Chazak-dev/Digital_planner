@@ -23,6 +23,17 @@ export async function createTopic(formData: FormData) {
   revalidatePath(`/university/${courseId}`);
 }
 
+export async function updateTopic(formData: FormData) {
+  const supabase = await createClient();
+  const topicId = String(formData.get("topicId"));
+  const courseId = String(formData.get("courseId"));
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return;
+
+  await supabase.from("course_topics").update({ title }).eq("id", topicId);
+  revalidatePath(`/university/${courseId}`);
+}
+
 export async function toggleTopicStatus(formData: FormData) {
   const supabase = await createClient();
   const topicId = String(formData.get("topicId"));
